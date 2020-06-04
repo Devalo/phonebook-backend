@@ -25,6 +25,14 @@ app.get('/', (req, res) => {
   res.send("Api");
 });
 
+
+app.get('/info', (req, res) => {
+  let entriesCount = Object.keys(persons).length;
+  console.log(entriesCount);
+  res.send(`<p>Phonebook has info for ${entriesCount} people</p>
+            <p>${Date()}</p>`);
+})
+
 app.get('/api/persons', (req, res) => {
   res.json(persons);
 
