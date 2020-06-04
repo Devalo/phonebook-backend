@@ -63,28 +63,34 @@ const generateId = () => {
 }
 
 app.post('/api/persons', (req, res) => {
-  console.log("Post");
   const body = req.body;
   if (!body.name || !body.number) {
     return res.status(400).json({
       error: "Incorrect/missing fields"
     });
   }
-
-  const person = {
-    name: body.name,
-    number: body.number,
-    date: new Date(),
-    id: generateId(),
+  
+  const values = Object.values(persons);
+  
+  for (let i = 0; i < persons.length; i++){
+    if (values[i].name === body.name){
+      return res.status(400).json({
+        error: 'name must be unique'
+      });
+    }
   }
 
-
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number,
+  }
   persons = persons.concat(person)
+
   console.log(person);
   res.json(person)
 
 });
-
 
 const PORT = 3001;
 app.listen(PORT, () => {
