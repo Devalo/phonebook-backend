@@ -57,6 +57,33 @@ app.delete('/api/persons/:id', (req, res) => {
 
 });
 
+const generateId = () => {
+  const randomId = Math.floor(Math.random() * 1000) + 1;
+  return randomId;
+}
+
+app.post('/api/persons', (req, res) => {
+  console.log("Post");
+  const body = req.body;
+  if (!body.name || !body.number) {
+    return res.status(400).json({
+      error: "Incorrect/missing fields"
+    });
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    date: new Date(),
+    id: generateId(),
+  }
+
+
+  persons = persons.concat(person)
+  console.log(person);
+  res.json(person)
+
+});
 
 
 const PORT = 3001;
