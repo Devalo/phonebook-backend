@@ -79,7 +79,7 @@ const generateId = () => {
   return randomId;
 }
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body;
   if (body.name === undefined || body.number === undefined) {
     return res.status(400).json({
@@ -93,9 +93,12 @@ app.post('/api/persons', (req, res) => {
 
   });
 
-  person.save().then(entry => {
-    res.json(entry)
-  });
+  person.save()
+    .then(savedEntry => savedEntry.toJSON())
+    .then(savedAndFormatted => {
+      res.json(savedAndFormatted)
+    })
+    .catch(error => next(error))
 
 });
 
@@ -106,8 +109,11 @@ const errorHandler = (error, req, res, next) => {
 
   if (error.name === 'CastError') {
     return res.status(400).send({error: 'malformatted id'});
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({error: error.message});
   }
 }
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 3001;
