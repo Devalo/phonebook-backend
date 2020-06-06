@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// mongodb+srv://fullstack:<password>@cluster0-qhn5k.mongodb.net/<dbname>?retryWrites=true&w=majority
+mongoose.set('useFindAndModify', false);
 
 if (process.argv.length < 3) {
   console.log("Please provide the password as an argument: node mongo.js <password>");

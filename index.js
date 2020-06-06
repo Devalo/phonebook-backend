@@ -11,23 +11,6 @@ app.use(express.static('build'));
 app.use(morgan(':method test :status :response-time ms - :res[content-length] :body'))
 
 
-let persons = [
-  {
-    id: 1,
-    name: "Stephan",
-    number: "1234",
-  },
-  {
-    id: 2,
-    name: "Arthas",
-    number: "4321"
-  },
-  {
-    id: 3,
-    name: "Doomtrader",
-    number: "98432"
-  }
-]
 
 app.get('/', (req, res) => {
   res.send("Api");
@@ -48,23 +31,47 @@ app.get('/api/persons', (req, res) => {
 
 });
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const person = persons.find(person => person.id === id);
+app.get('/api/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id)
+    .then(person => {
+      if (person) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
 
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  }
+
+
 });
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id);
-  persons = persons.filter(person => person.id !== id);
-
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then(result => {
+      res.status(204).end()
+    })
+    .catch(err => {
+      next(err);
+    });
   res.status(204).end();
+});
 
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body;
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, {new: true})
+    .then(updated => {
+      res.json(updated)
+    })
+    .catch(err => next(err));
 });
 
 const generateId = () => {
@@ -74,35 +81,33 @@ const generateId = () => {
 
 app.post('/api/persons', (req, res) => {
   const body = req.body;
-  if (!body.name || !body.number) {
+  if (body.name === undefined || body.number === undefined) {
     return res.status(400).json({
       error: "Incorrect/missing fields"
     });
   }
-  
-  const values = Object.values(persons);
-  
-  for (let i = 0; i < persons.length; i++){
-    if (values[i].name === body.name){
-      return res.status(400).json({
-        error: 'name must be unique'
-      });
-    }
-  }
 
-  const person = {
-    id: generateId(),
+  const person = new Person({
     name: body.name,
-    number: body.number,
-  }
-  persons = persons.concat(person)
+    number: body.number
 
-  console.log(person);
-  res.json(person)
+  });
+
+  person.save().then(entry => {
+    res.json(entry)
+  });
 
 });
 
-  morgan.token('body', function (req, res) { return JSON.stringify(req.body) });
+morgan.token('body', function (req, res) { return JSON.stringify(req.body) });
+
+const errorHandler = (error, req, res, next) => {
+  console.log(error.message);
+
+  if (error.name === 'CastError') {
+    return res.status(400).send({error: 'malformatted id'});
+  }
+}
 
 
 const PORT = process.env.PORT || 3001;
