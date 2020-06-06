@@ -8,21 +8,15 @@ const Person = require('./models/person');
 app.use(express.json());
 app.use(cors());
 app.use(express.static('build'));
-app.use(morgan(':method test :status :response-time ms - :res[content-length] :body'))
+app.use(morgan(':method test :status :response-time ms - :res[content-length] :body'));
 
 
 
 app.get('/', (req, res) => {
-  res.send("Api");
+  res.send('Api');
 });
 
 
-app.get('/info', (req, res) => {
-  let entriesCount = Object.keys(persons).length;
-  console.log(entriesCount);
-  res.send(`<p>Phonebook has info for ${entriesCount} people</p>
-            <p>${Date()}</p>`);
-})
 
 app.get('/api/persons', (req, res) => {
   Person.find({}).then(persons => {
@@ -51,7 +45,8 @@ app.get('/api/persons/:id', (req, res, next) => {
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then(result => {
-      res.status(204).end()
+      console.log(result);
+      res.status(204).end();
     })
     .catch(err => {
       next(err);
@@ -65,25 +60,20 @@ app.put('/api/persons/:id', (req, res, next) => {
   const person = {
     name: body.name,
     number: body.number,
-  }
+  };
 
-  Person.findByIdAndUpdate(req.params.id, person, {new: true})
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
     .then(updated => {
-      res.json(updated)
+      res.json(updated);
     })
     .catch(err => next(err));
 });
-
-const generateId = () => {
-  const randomId = Math.floor(Math.random() * 1000) + 1;
-  return randomId;
-}
 
 app.post('/api/persons', (req, res, next) => {
   const body = req.body;
   if (body.name === undefined || body.number === undefined) {
     return res.status(400).json({
-      error: "Incorrect/missing fields"
+      error: 'Incorrect/missing fields'
     });
   }
 
@@ -96,23 +86,23 @@ app.post('/api/persons', (req, res, next) => {
   person.save()
     .then(savedEntry => savedEntry.toJSON())
     .then(savedAndFormatted => {
-      res.json(savedAndFormatted)
+      res.json(savedAndFormatted);
     })
-    .catch(error => next(error))
+    .catch(error => next(error));
 
 });
 
-morgan.token('body', function (req, res) { return JSON.stringify(req.body) });
+morgan.token('body', function (req) { return JSON.stringify(req.body); });
 
-const errorHandler = (error, req, res, next) => {
+const errorHandler = (error, req, res) => {
   console.log(error.message);
 
   if (error.name === 'CastError') {
-    return res.status(400).send({error: 'malformatted id'});
+    return res.status(400).send({ error: 'malformatted id' });
   } else if (error.name === 'ValidationError') {
-    return res.status(400).json({error: error.message});
+    return res.status(400).json({ error: error.message });
   }
-}
+};
 app.use(errorHandler);
 
 

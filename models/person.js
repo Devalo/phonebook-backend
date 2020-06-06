@@ -6,12 +6,12 @@ mongoose.set('useFindAndModify', false);
 
 console.log('connecting to', url);
 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true})
-  .then(result => {
-    console.log("Connected to MongoDB");
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('Connected to MongoDB');
   })
   .catch((err) => {
-    console.log("error connecting to DB", err.message);
+    console.log('error connecting to DB', err.message);
   });
 
 const personSchema = new mongoose.Schema({
